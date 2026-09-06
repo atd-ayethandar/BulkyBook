@@ -11,6 +11,8 @@ ASP.NET Core MVC + Entity Framework Core project notes.
 
 > Replace `DESKTOP-XXXX\SQLEXPRESS` with the actual SQL Server instance name on your machine.
 
+https://github.com/bhrugen/BulkyBook
+
 
 Right click BulkyBookWeb -> Edit Project file
 
