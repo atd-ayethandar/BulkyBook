@@ -22,7 +22,7 @@ namespace BulkyBook.Business.Services
 
         public async Task<Category?> GetCategoryByIdAsync(int id)
         {
-            return await _context.Categories.FindAsync();
+            return await _context.Categories.FindAsync(id);
         }
         public async Task<Category> CreateCategoryAsync(Category category)
         {
