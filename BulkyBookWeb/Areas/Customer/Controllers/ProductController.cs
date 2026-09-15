@@ -17,16 +17,18 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
         }
         public async Task<IActionResult> Index()
         {
+            return View();
+        }
+        public async Task<IActionResult> Upsert()
+        {
             IEnumerable<SelectListItem> categoryList = (await _categoryService.GetAllCategoriesAsync())
                 .Select(c => new SelectListItem
                 {
                     Text = c.Name,
                     Value = c.Id.ToString()
                 });
-            return View(categoryList);
-        }
-        public IActionResult Upsert()
-        {
+            ViewBag.CategoryList = categoryList;
+
             return View();
         }
 
