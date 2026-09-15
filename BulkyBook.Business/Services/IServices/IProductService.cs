@@ -12,7 +12,6 @@ namespace BulkyBook.Business.Services.IServices
         Task<Product> CreateProductAsync(Product product);
         Task UpdateProductAsync(Product product);
         Task DeleteProductAsync(int id);
-        Task<bool> IsProductNameUniqueAsync(string name, int? productId = null);
 
     }
 }
