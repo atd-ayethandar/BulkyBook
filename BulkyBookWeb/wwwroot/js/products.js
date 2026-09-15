@@ -5,7 +5,7 @@ $('#tblData').DataTable({
         { data: 'isbn' },
         { data: 'price' },
         { data: 'author' },
-        { defaultContent: '' },
+        { data: 'category.name' },
         { defaultContent: '' }
     ]
 });
