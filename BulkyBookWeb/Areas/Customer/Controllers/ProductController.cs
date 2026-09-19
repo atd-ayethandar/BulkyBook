@@ -23,7 +23,7 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
         {
             return View();
         }
-        public async Task<IActionResult> Upsert()
+        public async Task<IActionResult> Upsert(int? id)
         {
             var categories = await _categoryService.GetAllCategoriesAsync();
             ProductVM productVM = new()
@@ -36,7 +36,16 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
                 Product = new Product()
             };
 
-            return View(productVM);
+            if (id == null || id == 0)
+            {
+                //create
+                return View(productVM);
+            }
+            else
+            {
+                productVM.Product = await _productService.GetProductByIdAsync(id.Value);
+                return View(productVM);
+            }
         }
 
         [HttpPost]
@@ -69,7 +78,16 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
 
 
 
-                await _productService.CreateProductAsync(productVM.Product);
+                if (productVM.Product.Id == null || productVM.Product.Id == 0)
+                {
+                    //create
+                    await _productService.CreateProductAsync(productVM.Product);
+                }
+                else
+                {
+                    await _productService.UpdateProductAsync(productVM.Product);
+
+                }
                 TempData["success"] = "Product created successfully";
                 return RedirectToAction("Index");
             }
