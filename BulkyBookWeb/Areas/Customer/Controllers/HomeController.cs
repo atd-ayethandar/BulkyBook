@@ -19,6 +19,11 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             var products = await _productService.GetAllProductsAsync(includeCategory: true);
             return View(products);
         }
+        public async Task<IActionResult> Details(int productId)
+        {
+            var product = await _productService.GetProductByIdAsync(productId, includeCategory: true);
+            return View(product);
+        }
 
         public IActionResult Privacy()
         {
