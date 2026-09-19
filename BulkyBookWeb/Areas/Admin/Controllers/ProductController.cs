@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using static System.Net.WebRequestMethods;
 
-namespace BulkyBookWeb.Areas.Customer.Controllers
+namespace BulkyBookWeb.Areas.Admin.Controllers
 {
-    [Area("Customer")]
+    [Area("Admin")]
     public class ProductController : Controller
     {
         private readonly IProductService _productService;
