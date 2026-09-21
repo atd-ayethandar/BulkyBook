@@ -67,5 +67,11 @@ namespace BulkyBookWeb.Areas.Identity.Controllers
         {
             return View();
         }
+
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return RedirectToAction("Index", "Home", new { area = "Customer" });
+        }
     }
 }
