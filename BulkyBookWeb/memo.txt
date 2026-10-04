@@ -1,0 +1,469 @@
+pdfRegister.cfm
+.....................................................................................
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>PDF登録</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        select,
+        input[type="file"] {
+            width: 300px;
+            padding: 8px;
+        }
+
+        button {
+            padding: 10px 25px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>PDF登録</h2>
+
+<form
+    action="uploadPdf.cfm"
+    method="post"
+    enctype="multipart/form-data">
+
+    <div class="form-group">
+
+        <label>機械</label>
+
+        <select name="machineId" required>
+
+            <option value="">
+                選択してください
+            </option>
+
+            <option value="1">
+                機械A
+            </option>
+
+            <option value="2">
+                機械B
+            </option>
+
+            <option value="3">
+                機械C
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <div class="form-group">
+
+        <label>PDFファイル</label>
+
+        <input
+            type="file"
+            name="pdfFile"
+            accept=".pdf,application/pdf"
+            required>
+
+    </div>
+
+
+    <button type="submit">
+        登録
+    </button>
+
+</form>
+
+</body>
+</html>
+.............................................................................................
+
+uploadPdf.cfm
+.............................................................................................
+<cfparam
+    name="form.machineId"
+    default="">
+
+
+<!---
+    1. Machine ID validation
+--->
+<cfif NOT reFind("^\d+$", form.machineId)>
+
+    <h3>機械を正しく選択してください。</h3>
+    <cfabort>
+
+</cfif>
+
+
+<!---
+    2. PDF root folder
+--->
+<cfset pdfRoot =
+    expandPath("../pdf/")>
+
+
+<!---
+    3. Selected machine folder
+--->
+<cfset targetFolder =
+    pdfRoot & form.machineId & "/">
+
+
+<!---
+    4. Folder မရှိရင် create
+--->
+<cfif NOT directoryExists(targetFolder)>
+
+    <cfdirectory
+        action="create"
+        directory="#targetFolder#">
+
+</cfif>
+
+
+<!---
+    5. PDF Upload
+--->
+<cftry>
+
+    <cffile
+        action="upload"
+        filefield="pdfFile"
+        destination="#targetFolder#"
+        nameconflict="makeunique"
+        accept="application/pdf">
+
+
+    <!---
+        Extension ထပ်စစ်မယ်
+    --->
+    <cfif lCase(cffile.serverFileExt) NEQ "pdf">
+
+        <cffile
+            action="delete"
+            file="#cffile.serverDirectory#/#cffile.serverFile#">
+
+        <h3>
+            PDFファイルのみアップロードできます。
+        </h3>
+
+        <cfabort>
+
+    </cfif>
+
+
+    <h3>
+        PDFを登録しました。
+    </h3>
+
+    <p>
+        ファイル名：
+        <cfoutput>
+            #encodeForHTML(cffile.serverFile)#
+        </cfoutput>
+    </p>
+
+    <p>
+        <a href="pdfRegister.cfm">
+            戻る
+        </a>
+    </p>
+
+
+    <cfcatch>
+
+        <h3>
+            PDFの登録に失敗しました。
+        </h3>
+
+        <cfoutput>
+            #encodeForHTML(cfcatch.message)#
+        </cfoutput>
+
+    </cfcatch>
+
+</cftry>
+.............................................................................................
+
+index.cfm
+.............................................................................................
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>機械選択</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+        }
+
+        select {
+            width: 300px;
+            padding: 8px;
+        }
+
+        #pdfArea {
+            margin-top: 30px;
+        }
+
+        #pdfViewer {
+            width: 100%;
+            height: 700px;
+            border: 1px solid #ccc;
+        }
+
+        #noPdf {
+            color: #777;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<h2>機械選択</h2>
+
+
+<select id="machineSelect">
+
+    <option value="">
+        選択してください
+    </option>
+
+    <option value="1">
+        機械A
+    </option>
+
+    <option value="2">
+        機械B
+    </option>
+
+    <option value="3">
+        機械C
+    </option>
+
+</select>
+
+
+<div id="pdfArea"></div>
+
+
+<script>
+
+const machineSelect =
+    document.getElementById("machineSelect");
+
+const pdfArea =
+    document.getElementById("pdfArea");
+
+
+machineSelect.addEventListener(
+    "change",
+    function () {
+
+        const machineId = this.value;
+
+
+        // ဘာမှမရွေးထားရင်
+        if (!machineId) {
+
+            pdfArea.innerHTML = "";
+
+            return;
+        }
+
+
+        // Loading
+        pdfArea.innerHTML =
+            "<p>PDFを確認しています...</p>";
+
+
+        fetch(
+            "getPdf.cfm?id=" +
+            encodeURIComponent(machineId)
+        )
+
+        .then(response => {
+
+            if (!response.ok) {
+                throw new Error(
+                    "Server Error"
+                );
+            }
+
+            return response.json();
+
+        })
+
+        .then(data => {
+
+            if (data.exists) {
+
+                pdfArea.innerHTML =
+                    '<iframe ' +
+                    'id="pdfViewer" ' +
+                    'src="' +
+                    data.url +
+                    '">' +
+                    '</iframe>';
+
+            }
+            else {
+
+                pdfArea.innerHTML =
+                    '<p id="noPdf">' +
+                    'PDFは登録されていません。' +
+                    '</p>';
+
+            }
+
+        })
+
+        .catch(error => {
+
+            console.error(error);
+
+            pdfArea.innerHTML =
+                "<p>PDFの取得に失敗しました。</p>";
+
+        });
+
+    }
+);
+
+</script>
+
+
+</body>
+</html>
+.............................................................................................
+
+
+getPdf.cfm
+.............................................................................................
+<cfsetting showdebugoutput="false">
+
+<cfparam
+    name="url.id"
+    default="">
+
+
+<cfset result = {
+    "exists" = false,
+    "url" = ""
+}>
+
+
+<!---
+    ID က number ပဲဖြစ်ခွင့်ပေးမယ်
+--->
+<cfif reFind("^\d+$", url.id)>
+
+
+    <!---
+        ဥပမာ:
+        /pdf/2/
+    --->
+    <cfset pdfFolder =
+        expandPath("./pdf/" & url.id & "/")>
+
+
+    <!---
+        Folder ရှိ/မရှိ
+    --->
+    <cfif directoryExists(pdfFolder)>
+
+
+        <!---
+            PDF files ရှာ
+        --->
+        <cfdirectory
+            action="list"
+            directory="#pdfFolder#"
+            name="pdfFiles"
+            filter="*.pdf">
+
+
+        <!---
+            PDF တစ်ခုခုရှိရင်
+        --->
+        <cfif pdfFiles.recordCount GT 0>
+
+            <cfset fileName =
+                pdfFiles.name[1]>
+
+
+            <cfset result.exists = true>
+
+
+            <cfset result.url =
+                "./pdf/" &
+                url.id &
+                "/" &
+                encodeForURL(fileName)>
+
+        </cfif>
+
+    </cfif>
+
+</cfif>
+
+
+<cfcontent
+    type="application/json"
+    reset="true">
+
+<cfoutput>
+#serializeJSON(result)#
+</cfoutput>
+.............................................................................................
+
+
+<cfdirectory
+    action="list"
+    directory="#targetFolder#"
+    name="oldFiles"
+    filter="*.pdf">
+
+
+<cfloop query="oldFiles">
+
+    <cffile
+        action="delete"
+        file="#targetFolder##oldFiles.name#">
+
+</cfloop>
+
+
+<cffile
+    action="upload"
+    filefield="pdfFile"
+    destination="#targetFolder#"
+    nameconflict="error"
+    accept="application/pdf">
