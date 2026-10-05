@@ -1,3 +1,99 @@
+getPdf.cfm
+<cfsetting showdebugoutput="false">
+
+<cfparam name="url.id" default="">
+
+<cfset result = {
+    "exists" = false,
+    "url" = ""
+}>
+
+<cfif reFind("^\d+$", url.id)>
+
+    <cfset pdfFolder =
+        expandPath("./pdf/" & url.id & "/")>
+
+    <cfif directoryExists(pdfFolder)>
+
+        <cfdirectory
+            action="list"
+            directory="#pdfFolder#"
+            name="pdfFiles"
+            filter="*.pdf">
+
+        <cfif pdfFiles.recordCount GT 0>
+
+            <cfset result.exists = true>
+
+            <!---
+                Filename မပို့တော့ဘူး
+                ID ပဲပို့မယ်
+            --->
+            <cfset result.url =
+                "./viewPdf.cfm?id=" &
+                urlEncodedFormat(url.id)>
+
+        </cfif>
+
+    </cfif>
+
+</cfif>
+
+<cfcontent
+    type="application/json"
+    reset="true">
+
+<cfoutput>#serializeJSON(result)#</cfoutput>
+.....................................................................................
+
+viewPdf.cfm
+.....................................................................................
+<cfsetting showdebugoutput="false">
+
+<cfparam name="url.id" default="">
+
+<!--- ID validation --->
+<cfif NOT reFind("^\d+$", url.id)>
+    <cfheader statuscode="400" statustext="Bad Request">
+    <cfabort>
+</cfif>
+
+<!--- PDF Folder --->
+<cfset pdfFolder =
+    expandPath("./pdf/" & url.id & "/")>
+
+<!--- Folder ရှိ/မရှိ --->
+<cfif NOT directoryExists(pdfFolder)>
+    <cfheader statuscode="404" statustext="Not Found">
+    <cfabort>
+</cfif>
+
+<!--- PDF ရှာ --->
+<cfdirectory
+    action="list"
+    directory="#pdfFolder#"
+    name="pdfFiles"
+    filter="*.pdf">
+
+<!--- PDF မရှိ --->
+<cfif pdfFiles.recordCount EQ 0>
+    <cfheader statuscode="404" statustext="Not Found">
+    <cfabort>
+</cfif>
+
+<!--- တကယ့် physical file path --->
+<cfset pdfPath =
+    pdfFolder & pdfFiles.name[1]>
+
+<!--- PDF ကို browser ဆီ stream လုပ် --->
+<cfcontent
+    type="application/pdf"
+    file="#pdfPath#"
+    deletefile="false">
+
+
+
+
 pdfRegister.cfm
 .....................................................................................
 <!DOCTYPE html>
