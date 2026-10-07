@@ -1,3 +1,42 @@
+<form action="upload.cfm"
+      method="post"
+      enctype="multipart/form-data">
+
+    <input type="file"
+           name="uploadFiles"
+           multiple>
+
+    <button type="submit">アップロード</button>
+</form>
+
+
+
+<cfset uploadFolder = expandPath("./uploads/")>
+
+<cfif NOT directoryExists(uploadFolder)>
+    <cfdirectory
+        action="create"
+        directory="#uploadFolder#">
+</cfif>
+
+<cftry>
+
+    <cffile
+        action="uploadAll"
+        destination="#uploadFolder#"
+        nameConflict="makeUnique">
+
+    <p>アップロードしました。</p>
+
+    <cfcatch>
+        <p>アップロードに失敗しました。</p>
+        <cfoutput>#encodeForHTML(cfcatch.message)#</cfoutput>
+    </cfcatch>
+
+</cftry>
+
+
+
 getPdf.cfm
 <cfsetting showdebugoutput="false">
 
