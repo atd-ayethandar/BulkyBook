@@ -1,3 +1,13 @@
+データ → データの入力規則 → リスト
+元の値 (Source): =WallTypeList
+
+INDEX + COUNTA Dynamic Range
+
+数式 → 名前の管理 → 新規作成
+名前:WallTypeList
+参照範囲:='マスタシート'!$A$2:INDEX('マスタシート'!$A$2:$A$10000,MAX(1,COUNTA('マスタシート'!$A$2:$A$10000)))
+Dropdown Source: =WallTypeList
+
 <form action="upload.cfm"
       method="post"
       enctype="multipart/form-data">
